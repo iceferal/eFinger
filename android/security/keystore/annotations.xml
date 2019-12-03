@@ -1,0 +1,5 @@
+<root>
+    <item name='android.security.keystore.KeyGenParameterSpec'>
+        <annotation name='java.lang.Deprecated' />
+    </item>
+</root>
