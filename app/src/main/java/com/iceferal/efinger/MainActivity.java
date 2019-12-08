@@ -1,6 +1,7 @@
 package com.iceferal.efinger;
 
 import android.app.KeyguardManager;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.Manifest;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,21 +69,25 @@ public class MainActivity extends AppCompatActivity {
             cryptoObject = new FingerprintManager.CryptoObject(cipher);
             FingerprintHandler helper = new FingerprintHandler(this);
             helper.startAuth(fingerprintManager, cryptoObject);
-        }  }      }
+            Log.d("keygen i bgios ", cryptoObject.toString());
+        }  }
+
+
+    }
 
     private void generateKey() throws FingerprintException {
         try {
         keyStore = KeyStore.getInstance("AndroidKeyStore");
         keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
         keyStore.load(null);
-        keyGenerator.init(new
-
-        KeyGenParameterSpec.Builder(KEY_NAME,KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+        keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                     .setUserAuthenticationRequired(true)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7).build());
 
         keyGenerator.generateKey();
+        Log.d("keygen i jajecznica ", keyGenerator.toString());
+
 
         } catch (KeyStoreException | NoSuchAlgorithmException
                 | NoSuchProviderException | InvalidAlgorithmParameterException
@@ -95,12 +101,15 @@ public class MainActivity extends AppCompatActivity {
         cipher = Cipher.getInstance(
         KeyProperties.KEY_ALGORITHM_AES + "/" + KeyProperties.BLOCK_MODE_CBC + "/" + KeyProperties.ENCRYPTION_PADDING_PKCS7);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-        throw new RuntimeException("Failed to get Cipher", e); }
+        throw new RuntimeException("Błąd inicjalizacji Cipher", e); }
 
         try {
             keyStore.load(null);
             SecretKey key = (SecretKey) keyStore.getKey(KEY_NAME,null);
+            Log.d("keygen i rosol ", key.toString());
             cipher.init(Cipher.ENCRYPT_MODE, key);
+            Log.d("keygen i flaki ", cipher.toString());
+
             return true;
         } catch (KeyPermanentlyInvalidatedException e) {
         return false;

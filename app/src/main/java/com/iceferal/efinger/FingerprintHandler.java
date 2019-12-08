@@ -32,13 +32,10 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     public void onAuthenticationFailed() {
         Toast.makeText(context, "Autoryzacja się nie powiodła!", Toast.LENGTH_LONG).show();    }
 
-//    @Override
-//    public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
-//        Toast.makeText(context, "Authentication help\n" + helpString, Toast.LENGTH_LONG).show();    }
 
     @Override
     public void onAuthenticationSucceeded(
         FingerprintManager.AuthenticationResult result) {
         context.startActivity(new Intent(context, SuccessActivity.class));
-        Toast.makeText(context, "Success!", Toast.LENGTH_LONG).show();    }
+        Toast.makeText(context, "Pomyślnie zalogowano!", Toast.LENGTH_LONG).show();    }
 }

@@ -1,5 +1,6 @@
 package com.iceferal.efinger;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,11 +13,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.util.UUID;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.pm.PermissionInfoCompat;
 
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 public class SuccessActivity extends AppCompatActivity {
@@ -25,7 +29,7 @@ public class SuccessActivity extends AppCompatActivity {
     private EditText editText;
     private Button saveBtn;
     private String text;
-    public static final String PASS = "pass";
+    public static final String PASS = "";
     public static final String SHARED_PREFS = "SharedPrefs";
     public static final String TEXT = "text";
 
@@ -38,6 +42,21 @@ public class SuccessActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
         saveBtn = (Button) findViewById(R.id.saveBtn);
 
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String salt = sharedPreferences.getString("salt", null);
+        if (salt == null) {
+            byte[] newSalt = getSalt();
+            editor.putString("salt", newSalt.toString());
+            editor.apply();
+            byte[] newIv = getIv();
+            editor.putString("iv", newIv.toString());
+            editor.apply();
+            String newPass = UUID.randomUUID().toString();
+            editor.putString(PASS, newPass);
+            editor.apply();
+        }
+
         try {
             loadData();
         } catch (Exception e) { e.printStackTrace(); }
@@ -46,7 +65,6 @@ public class SuccessActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     saveData();
-                    updateViews();
                 } catch (Exception e) { e.printStackTrace(); }
                 updateViews();
                 textView.setText(editText.getText().toString());
@@ -58,11 +76,15 @@ public class SuccessActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        Protection protection = new Protection("salt", "password", "iv");
+        Protection protection = new Protection(sharedPreferences.getString("salt", ""),
+                sharedPreferences.getString(PASS, ""),
+                sharedPreferences.getString("iv", ""));
 
         editor.putString(TEXT, protection.encrypt(editText.getText().toString()));
         editor.apply();
-        Toast.makeText(getApplicationContext(), "notatka zostala dodana", Toast.LENGTH_LONG).show();}
+        Toast.makeText(getApplicationContext(), "notatka zostala dodana", Toast.LENGTH_LONG).show();
+        loadData();
+    }
 
 
     private  void loadData() throws Exception {
@@ -100,5 +122,17 @@ public class SuccessActivity extends AppCompatActivity {
 
     public void userLogout() {
         startActivity(new Intent(this, MainActivity.class));
-        finish();    }
+        finish();}
+
+    private static byte[] getSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return salt;    }
+
+    private static byte[] getIv() {
+        SecureRandom random = new SecureRandom();
+        byte iv[] = new byte[16];
+        random.nextBytes(iv);
+        return iv;    }
 }
